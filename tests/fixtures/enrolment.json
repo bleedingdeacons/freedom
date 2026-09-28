@@ -1,0 +1,5 @@
+{
+    "token": "frt_0000000000000000000000000000000000000000000000000000000000000000",
+    "tablet": { "id": 12, "label": "Register tablet", "created_at": 1790000000, "reattached": false },
+    "application": { "slug": "register", "name": "Register" }
+}
