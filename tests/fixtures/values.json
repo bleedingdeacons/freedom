@@ -1,0 +1,8 @@
+{
+    "values": [
+        { "key": "smtp.host", "version": 41, "secret": false, "value": "mail.example.org" },
+        { "key": "smtp.password", "version": 42, "secret": true, "k": "base64-wrapped-content-key", "p": "base64-nonce-tag-ciphertext" }
+    ],
+    "missing": ["nothing.here"],
+    "unreadable": []
+}

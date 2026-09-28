@@ -1,0 +1,10 @@
+{
+    "application": "register",
+    "tablet": 12,
+    "etag": "5d41402abc4b2a76b9719d911017c592",
+    "checked_at": 1790000000,
+    "keys": [
+        { "key": "smtp.host", "version": 41, "secret": false },
+        { "key": "smtp.password", "version": 42, "secret": true }
+    ]
+}
