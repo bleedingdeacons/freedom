@@ -4,7 +4,7 @@ Requires at least: 6.1
 Tested up to: 7.1.1
 Requires PHP: 8.4
 Stable tag: 0.1.0
-Build date: 2026/09/28 19:21:57
+Build date: 2026/09/28 20:09:05
 License: MIT (Modified)
 
 Zero-configuration settings for MAUI apps. A tablet proves a Google account through Fellowship and receives its application's key/value configuration, secrets sealed to its own key. Requires Fellowship, Unity and Scrutiny.
