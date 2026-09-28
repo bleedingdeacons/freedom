@@ -78,6 +78,11 @@ final class ConfigController
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'manifest'],
             'permission_callback' => '__return_true',
+            'args'                => [
+                // The ETag again, for a proxy that drops If-None-Match — which
+                // SiteGround's does. See manifest().
+                'etag' => ['type' => 'string', 'required' => false, 'sanitize_callback' => 'sanitize_key'],
+            ],
         ]);
 
         register_rest_route(SignInController::NAMESPACE, '/config/values', [
@@ -114,7 +119,16 @@ final class ConfigController
 
         $manifest = Manifest::for($tablet->id, $effective);
 
-        if ($manifest->matches((string) $request->get_header('if_none_match'))) {
+        // If-None-Match is the standard way, but SiteGround's proxy does not
+        // pass it through to WordPress (checked 2026-09-28: the right ETag,
+        // sent back, still got a 200). freedom-sharp sends it as ?etag= as
+        // well, which nothing in between touches. Either will do.
+        $ifNoneMatch = (string) $request->get_header('if_none_match');
+        if ($ifNoneMatch === '') {
+            $ifNoneMatch = (string) $request->get_param('etag');
+        }
+
+        if ($manifest->matches($ifNoneMatch)) {
             $response = new WP_REST_Response(null, 304);
         } else {
             $response = new WP_REST_Response([

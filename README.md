@@ -227,7 +227,7 @@ Everything is under `freedom/v1`, requires HTTPS, and is sent
 | `GET /auth/start?application=&redirect_uri=&code_challenge=[&provider=]` | none | Begin a browser sign-in. Answers `{state, authorization_url}`. |
 | `POST /auth/exchange` | code + verifier | `{application, code, code_verifier, device_id, public_key, label?, platform?, model?, app_version?}`. `201` new tablet, `200` re-attached. Answers `{token, tablet:{id, label, created_at, reattached}, application:{slug, name}}`. |
 | `POST /auth/session` | Link device token | `{application, public_key, label?, platform?, model?, app_version?}`. The same answer, with no browser. |
-| `GET /config/manifest` | tablet | `{application, tablet, etag, checked_at, keys:[{key, version, secret}]}` and an `ETag` header; `304` on `If-None-Match`. |
+| `GET /config/manifest[?etag=]` | tablet | `{application, tablet, etag, checked_at, keys:[{key, version, secret}]}` and an `ETag` header; `304` when `If-None-Match` or `?etag=` names it. The query form exists because SiteGround's proxy drops `If-None-Match` before WordPress sees it. |
 | `POST /config/values` | tablet | `{keys:[…]}`, at most 100. Answers `{values:[{key, version, secret:false, value} \| {key, version, secret:true, k, p}], missing:[…], unreadable:[…]}`. |
 | `POST /tablet/key-fault` | tablet | "I was sent a secret I cannot open." Shown in red on the admin list. |
 | `DELETE /tablet` | tablet | Sign out (self-revoke). |

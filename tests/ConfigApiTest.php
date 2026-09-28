@@ -65,6 +65,17 @@ test('nothing changed is a 304 with no body', function () {
     expect($again->get_data())->toBeNull();
 });
 
+test('the etag in the query is honoured too, for a proxy that drops If-None-Match', function () {
+    $w = $this->world;
+    $etag = ((array) $w->config->manifest($w->request([], $this->token))->get_data())['etag'];
+
+    $again = $w->config->manifest($w->request(['etag' => $etag], $this->token));
+    $stale = $w->config->manifest($w->request(['etag' => 'not-the-etag'], $this->token));
+
+    expect($again->get_status())->toBe(304);
+    expect($stale->get_status())->toBe(200);
+});
+
 test('any change to a value moves the etag', function () {
     $w = $this->world;
     $etag = ((array) $w->config->manifest($w->request([], $this->token))->get_data())['etag'];
