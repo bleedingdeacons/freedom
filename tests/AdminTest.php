@@ -185,7 +185,7 @@ test('an account belonging to another application cannot be removed from this on
 
 // ── Tablets ───────────────────────────────────────────────────────
 
-test('a tablet is revoked, blocked, unblocked and removed from the tablets tab', function () {
+test('a tablet is revoked, blocked, unblocked and removed from the devices tab', function () {
     $w = $this->world;
     $w->enrolledToken();
     $id = array_key_first($w->tablets->rows);
@@ -214,13 +214,13 @@ test('tablet actions need the tablet capability, not the application one', funct
     expect(fn() => $this->appPage->tabletActionFromRequest())->toThrow(WpDieException::class);
 });
 
-test('the tablets tab names a member only for somebody who may see personal data', function () {
+test('the devices tab names a member only for somebody who may see personal data', function () {
     $w = $this->world;
     $w->enrolledToken();
 
-    $shown = captureOutput(fn() => $this->appPage->render($w->app->id, 'tablets'));
+    $shown = captureOutput(fn() => $this->appPage->render($w->app->id, 'devices'));
     WpState::$deniedCaps = [PersonalDataPolicy::VIEW_CAPABILITY];
-    $hidden = captureOutput(fn() => $this->appPage->render($w->app->id, 'tablets'));
+    $hidden = captureOutput(fn() => $this->appPage->render($w->app->id, 'devices'));
 
     expect($shown)->toContain('Dave P');
     expect($hidden)->not->toContain('Dave P')->toContain('A member');
@@ -245,7 +245,7 @@ test('every screen renders', function () {
     $w->editor->set($w->app(), 0, 'smtp.host', 'mail.example.org', false, 1);
 
     expect(captureOutput(fn() => $this->list->render()))->toContain('Register');
-    foreach (['configuration', 'accounts', 'tablets', 'details'] as $tab) {
+    foreach (['configuration', 'accounts', 'devices', 'details'] as $tab) {
         expect(captureOutput(fn() => $this->appPage->render($w->app->id, $tab)))->toContain('nav-tab-active');
     }
     expect(captureOutput(fn() => $this->tabletPage->render((int) array_key_first($w->tablets->rows))))->toContain('smtp.host');
