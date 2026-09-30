@@ -66,8 +66,8 @@ final class TabletPage
 
         echo '<h1>' . esc_html($tablet->label !== '' ? $tablet->label : __('(unnamed tablet)', 'freedom'))
             . ' <span class="description">' . esc_html($application->name) . '</span></h1>';
-        echo '<p><a href="' . esc_url($this->url(['app' => $application->id, 'tab' => 'tablets'])) . '">&larr; '
-            . esc_html__('All tablets', 'freedom') . '</a></p>';
+        echo '<p><a href="' . esc_url($this->url(['app' => $application->id, 'tab' => 'devices'])) . '">&larr; '
+            . esc_html__('All devices', 'freedom') . '</a></p>';
 
         $this->notice();
 

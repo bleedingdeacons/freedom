@@ -45,7 +45,7 @@ final class ApplicationPage
     public const DELETE_VALUE_ACTION = 'freedom_delete_value';
     public const TABLET_ACTION = 'freedom_tablet_action';
 
-    private const TABS = ['configuration', 'accounts', 'tablets', 'details'];
+    private const TABS = ['configuration', 'accounts', 'devices', 'details'];
 
     private const TABLET_OPERATIONS = ['revoke', 'block', 'unblock', 'remove'];
 
@@ -99,7 +99,7 @@ final class ApplicationPage
         $labels = [
             'configuration' => __('Configuration', 'freedom'),
             'accounts'      => __('Common accounts', 'freedom'),
-            'tablets'       => __('Tablets', 'freedom'),
+            'devices'       => __('Devices', 'freedom'),
             'details'       => __('Details', 'freedom'),
         ];
         foreach ($labels as $key => $label) {
@@ -110,7 +110,7 @@ final class ApplicationPage
 
         match ($tab) {
             'accounts' => $this->renderAccounts($application),
-            'tablets'  => $this->renderTablets($application),
+            'devices'  => $this->renderTablets($application),
             'details'  => $this->renderDetails($application),
             default    => $this->renderConfiguration($application),
         };
@@ -293,7 +293,7 @@ final class ApplicationPage
     {
         [$code, $id] = [$this->tabletActionFromRequest(), $this->postedInt('app')];
         // nosemgrep: php.symfony.security.audit.symfony-non-literal-redirect.symfony-non-literal-redirect
-        $this->redirectTo($code, ['app' => $id, 'tab' => 'tablets']);
+        $this->redirectTo($code, ['app' => $id, 'tab' => 'devices']);
     }
 
     public function tabletActionFromRequest(): string
@@ -508,13 +508,13 @@ final class ApplicationPage
         $canSeeMembers = current_user_can(PersonalDataPolicy::VIEW_CAPABILITY);
 
         if ($tablets === []) {
-            echo '<p>' . esc_html__('No tablets have signed in yet.', 'freedom') . '</p>';
+            echo '<p>' . esc_html__('No devices have signed in yet.', 'freedom') . '</p>';
 
             return;
         }
 
         echo '<table class="wp-list-table widefat fixed striped"><thead><tr>';
-        echo '<th scope="col">' . esc_html__('Tablet', 'freedom') . '</th>';
+        echo '<th scope="col">' . esc_html__('Device', 'freedom') . '</th>';
         echo '<th scope="col">' . esc_html__('Signed in as', 'freedom') . '</th>';
         echo '<th scope="col">' . esc_html__('Enrolled', 'freedom') . '</th>';
         echo '<th scope="col">' . esc_html__('Last checked in', 'freedom') . '</th>';

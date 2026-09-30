@@ -159,7 +159,7 @@ final class ApplicationsPage
             echo '<th scope="col">' . esc_html__('Application', 'freedom') . '</th>';
             echo '<th scope="col">' . esc_html__('Slug', 'freedom') . '</th>';
             echo '<th scope="col">' . esc_html__('Callback', 'freedom') . '</th>';
-            echo '<th scope="col">' . esc_html__('Tablets', 'freedom') . '</th>';
+            echo '<th scope="col">' . esc_html__('Devices', 'freedom') . '</th>';
             echo '<th scope="col">' . esc_html__('Revision', 'freedom') . '</th>';
             echo '<th scope="col">' . esc_html__('Status', 'freedom') . '</th>';
             echo '</tr></thead><tbody>';
