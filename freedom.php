@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Freedom
  * Description: Zero-configuration settings for MAUI apps. A tablet proves a Google account through Fellowship — a Unity member's own, or one of the application's common tablet accounts — and receives that application's key/value configuration, with per-tablet overrides and secrets sealed to the tablet's own key. Every value carries a version, and the app polls a manifest of them on every start. Requires Fellowship, Unity and Scrutiny.
- * Version: 0.2.0
+ * Version: 0.2.1
  * Requires at least: 6.1
  * Requires PHP: 8.4
  * Requires Plugins: unity, scrutiny, fellowship
