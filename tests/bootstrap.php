@@ -68,6 +68,13 @@ spl_autoload_register(function ($class) {
 // Fellowship device store behind it. That is a dependency on another
 // repository's test code, and deliberately so — a copy here would be a
 // second implementation of Fellowship's contract to keep in step.
+//
+// Fellowship's sign-in is built on the Guardian library, which Fellowship
+// ships in its own vendor/. That copy is not loaded here: a sibling checkout's
+// vendor/ is a full dev install locally, and Composer prepends its autoloader,
+// so its PHPUnit and Pest would shadow this suite's. Guardian comes from
+// Freedom's own vendor/ instead, as a require-dev at the same major Fellowship
+// requires — move the two together.
 $fellowshipPath = getenv('FELLOWSHIP_PATH') ?: dirname(__DIR__, 2) . '/fellowship';
 
 if (!is_dir($fellowshipPath . '/src')) {
