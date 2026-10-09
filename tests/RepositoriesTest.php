@@ -52,6 +52,36 @@ test('a revision that could not be taken throws rather than reusing one', functi
     expect(fn() => (new WpdbApplicationRepository($this->wpdb))->nextRevision(3))->toThrow(RuntimeException::class);
 });
 
+test('an application\'s own Google client is written, and a null secret leaves the stored one alone', function () {
+    $repository = new WpdbApplicationRepository($this->wpdb);
+
+    expect($repository->setGoogleClient(3, 'id.apps.googleusercontent.com', 'ciphertext', 100))->toBeTrue();
+    expect($repository->setGoogleClient(3, 'id.apps.googleusercontent.com', null, 101))->toBeTrue();
+
+    expect($this->wpdb->updates[0]['data'])->toBe([
+        'google_client_id'     => 'id.apps.googleusercontent.com',
+        'updated_at'           => 100,
+        'google_client_secret' => 'ciphertext',
+    ]);
+    expect($this->wpdb->updates[1]['data'])->not->toHaveKey('google_client_secret');
+    expect($this->wpdb->updates[1]['where'])->toBe(['id' => 3]);
+});
+
+test('an application\'s own Google client is read back, and an empty secret reads as none', function () {
+    $row = ['id' => 3, 'slug' => 'register', 'google_client_id' => 'id.apps.googleusercontent.com', 'google_client_secret' => 'ciphertext'];
+    $this->wpdb->results = [$row];
+    $application = (new WpdbApplicationRepository($this->wpdb))->findById(3);
+    expect($application->googleClientId)->toBe('id.apps.googleusercontent.com');
+    expect($application->googleClientSecret)->toBe('ciphertext');
+    expect($application->hasOwnGoogleClient())->toBeTrue();
+
+    $this->wpdb->results = [['google_client_secret' => ''] + $row];
+    expect((new WpdbApplicationRepository($this->wpdb))->findById(3)->googleClientSecret)->toBeNull();
+
+    $this->wpdb->results = [['id' => 4, 'slug' => 'hand']];
+    expect((new WpdbApplicationRepository($this->wpdb))->findById(4)->hasOwnGoogleClient())->toBeFalse();
+});
+
 test('a revoked tablet is filtered in the lookup itself', function () {
     (new WpdbTabletRepository($this->wpdb))->findByTokenHash(str_repeat('a', 64));
 
@@ -130,6 +160,8 @@ test('the schema installs every table, with the uniques the rules need', functio
     $sql = implode("\n", $GLOBALS['__freedom_dbdelta']);
     expect($GLOBALS['__freedom_dbdelta'])->toHaveCount(4);
     expect($sql)->toContain('UNIQUE KEY slug')
+        ->toContain('google_client_id VARCHAR(255)')
+        ->toContain('google_client_secret TEXT')
         ->toContain('UNIQUE KEY application_email')
         ->toContain('UNIQUE KEY application_device')
         ->toContain('UNIQUE KEY application_tablet_key');

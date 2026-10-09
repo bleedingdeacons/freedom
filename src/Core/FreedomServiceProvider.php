@@ -19,6 +19,7 @@ use Freedom\Admin\ApplicationsPage;
 use Freedom\Admin\TabletPage;
 use Freedom\Applications\ApplicationRepository;
 use Freedom\Applications\WpdbApplicationRepository;
+use Freedom\Auth\ClientSecrets;
 use Freedom\Auth\FreedomAudience;
 use Freedom\Config\ConfigEditor;
 use Freedom\Config\ValueRepository;
@@ -51,6 +52,8 @@ final class FreedomServiceProvider
     {
         // ── Core ──
         $container->register(Cipher::class, fn() => new Cipher('freedom-values'));
+        // An application's own OAuth client secret: its own key domain.
+        $container->register(ClientSecrets::class, fn() => new ClientSecrets());
 
         // ── Repositories ──
         $container->register(ApplicationRepository::class, function () {
@@ -103,6 +106,7 @@ final class FreedomServiceProvider
         $container->register(FreedomAudience::class, fn(ContainerInterface $c) => new FreedomAudience(
             $c->get(ApplicationRepository::class),
             $c->get(TabletGate::class),
+            $c->get(ClientSecrets::class),
         ));
 
         // ── REST ──
@@ -143,6 +147,7 @@ final class FreedomServiceProvider
             $c->get(ConfigEditor::class),
             $c->get(TabletAudit::class),
             $c->get(MemberRepository::class),
+            $c->get(ClientSecrets::class),
         ));
         $container->register(TabletPage::class, fn(ContainerInterface $c) => new TabletPage(
             $c->get(ApplicationRepository::class),

@@ -12,6 +12,7 @@ use Freedom\Accounts\CommonAccountRepository;
 use Freedom\Applications\Application;
 use Freedom\Applications\ApplicationRepository;
 use Freedom\Applications\CallbackUri;
+use Freedom\Auth\ClientSecrets;
 use Freedom\Config\ConfigEditor;
 use Freedom\Config\ConfigValue;
 use Freedom\Config\ValueRepository;
@@ -49,6 +50,9 @@ final class ApplicationPage
 
     private const TABLET_OPERATIONS = ['revoke', 'block', 'unblock', 'remove'];
 
+    /** What Google's console issues. Catches a secret pasted into the id field. */
+    private const GOOGLE_CLIENT_ID = '/^[A-Za-z0-9-]{1,200}\.apps\.googleusercontent\.com$/';
+
     public function __construct(
         private readonly ApplicationRepository $applications,
         private readonly CommonAccountRepository $accounts,
@@ -57,6 +61,7 @@ final class ApplicationPage
         private readonly ConfigEditor $editor,
         private readonly TabletAudit $audit,
         private readonly MemberRepository $members,
+        private readonly ClientSecrets $secrets,
     ) {
     }
 
@@ -142,6 +147,17 @@ final class ApplicationPage
             return 'bad_callback';
         }
 
+        // The Google client is checked before anything is written, so a
+        // mistyped id cannot save half the form.
+        $clientId = $this->postedText('google_client_id');
+        $clientSecret = trim($this->postedRaw('google_client_secret'));
+        if ($clientId !== '' && preg_match(self::GOOGLE_CLIENT_ID, $clientId) !== 1) {
+            return 'bad_google_client';
+        }
+        if ($clientId !== '' && $clientSecret === '' && $application->googleClientSecret === null) {
+            return 'google_secret_needed';
+        }
+
         $saved = $this->applications->update(
             $application->id,
             $name,
@@ -152,7 +168,29 @@ final class ApplicationPage
             time(),
         );
 
-        return $saved ? 'app_saved' : 'failed';
+        return $saved && $this->saveGoogleClient($application, $clientId, $clientSecret) ? 'app_saved' : 'failed';
+    }
+
+    /**
+     * An empty id goes back to Fellowship's client and clears the secret
+     * with it. A blank secret keeps the stored one, so the id can be saved
+     * without the secret ever being shown again.
+     */
+    private function saveGoogleClient(Application $application, string $clientId, string $clientSecret): bool
+    {
+        if ($clientId === '') {
+            return $this->applications->setGoogleClient($application->id, '', '', time());
+        }
+
+        $encrypted = null;
+        if ($clientSecret !== '') {
+            $encrypted = $this->secrets->encrypt($clientSecret);
+            if ($encrypted === '') {
+                return false;
+            }
+        }
+
+        return $this->applications->setGoogleClient($application->id, $clientId, $encrypted, time());
     }
 
     public function handleDelete(): void
@@ -636,6 +674,8 @@ final class ApplicationPage
             . '<p class="description">' . esc_html__('Disabling stands the application down: tablets keep what they have and receive nothing new. It does not take anything away — revoke or block tablets for that.', 'freedom') . '</p></td></tr>';
         echo '</tbody></table>';
 
+        $this->renderGoogleClient($application);
+
         submit_button(__('Save', 'freedom'));
         echo '</form>';
 
@@ -648,6 +688,30 @@ final class ApplicationPage
             __('Delete application', 'freedom'),
             __('Delete this application and everything under it? This cannot be undone.', 'freedom'),
         );
+    }
+
+    /**
+     * The application's own Google client: optional, so its tablets see its
+     * own consent screen rather than Link's. The secret is write-only, like
+     * a configuration secret.
+     */
+    private function renderGoogleClient(Application $application): void
+    {
+        echo '<h2>' . esc_html__('Google sign-in client', 'freedom') . '</h2>';
+        echo '<p class="description">' . esc_html__('Optional. Without one, tablets sign in with Fellowship\'s Google client and see its consent screen. With one, they see this application\'s own.', 'freedom') . '</p>';
+        echo '<table class="form-table" role="presentation"><tbody>';
+        echo '<tr><th scope="row"><label for="freedom-google-client-id">' . esc_html__('Client ID', 'freedom') . '</label></th><td>'
+            . '<input type="text" id="freedom-google-client-id" name="google_client_id" class="large-text code" autocomplete="off" value="' . esc_attr($application->googleClientId) . '">'
+            . '<p class="description">' . esc_html__('A Web application client from the Credentials page of the application\'s Google Cloud project. Clear it to go back to Fellowship\'s client.', 'freedom') . '</p></td></tr>';
+        echo '<tr><th scope="row"><label for="freedom-google-client-secret">' . esc_html__('Client secret', 'freedom') . '</label></th><td>'
+            . '<input type="password" id="freedom-google-client-secret" name="google_client_secret" class="regular-text" autocomplete="new-password" value="">'
+            . '<p class="description">' . esc_html($application->googleClientSecret !== null
+                ? __('Stored. Leave blank to keep it.', 'freedom')
+                : __('Not set.', 'freedom')) . '</p></td></tr>';
+        echo '<tr><th scope="row">' . esc_html__('Authorized redirect URI', 'freedom') . '</th><td>'
+            . '<code>' . esc_html(rest_url('fellowship/v1/auth/callback')) . '</code>'
+            . '<p class="description">' . esc_html__('Add this to the client in Google\'s console. Sign-in still returns through Fellowship, whichever client starts it.', 'freedom') . '</p></td></tr>';
+        echo '</tbody></table>';
     }
 
     /** The application the posted form names, after its capability and per-application nonce check. */

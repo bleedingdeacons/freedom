@@ -30,6 +30,13 @@ interface ApplicationRepository
         int $now,
     ): bool;
 
+    /**
+     * Set the application's own Google client: its id ('' to go back to
+     * Fellowship's), and its secret as ciphertext. A null secret keeps the
+     * stored one, so a settings form need never show it to save the id.
+     */
+    public function setGoogleClient(int $id, string $clientId, ?string $encryptedSecret, int $now): bool;
+
     public function findById(int $id): ?Application;
 
     public function findBySlug(string $slug): ?Application;

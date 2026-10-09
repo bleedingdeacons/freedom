@@ -21,6 +21,12 @@ if (!defined('ABSPATH')) {
  * the next number, so a version is never reused within an application and
  * a tablet can compare versions for difference rather than order. See
  * {@see \Freedom\Config\ConfigEditor}.
+ *
+ * <b>An application may sign its tablets in with its own Google client</b>,
+ * so they see its own consent screen ("Intergroup Register") rather than
+ * the one Fellowship's client shows for Link. Empty means Fellowship's.
+ * `googleClientSecret` is the stored ciphertext, never the secret itself;
+ * see {@see \Freedom\Auth\FreedomAudience::clientFor()}.
  */
 final class Application
 {
@@ -43,6 +49,14 @@ final class Application
         public readonly int $revision,
         public readonly int $createdAt,
         public readonly int $updatedAt,
+        public readonly string $googleClientId = '',
+        public readonly ?string $googleClientSecret = null,
     ) {
+    }
+
+    /** Whether this application signs its tablets in with a Google client of its own. */
+    public function hasOwnGoogleClient(): bool
+    {
+        return $this->googleClientId !== '';
     }
 }

@@ -34,7 +34,32 @@ final class InMemoryApplicationRepository implements ApplicationRepository
             return false;
         }
 
-        $this->rows[$id] = new Application($id, $current->slug, $name, $callbackUri, $allowLoopback, $acceptFellowshipSessions, $enabled, $current->revision, $current->createdAt, $now);
+        $this->rows[$id] = new Application($id, $current->slug, $name, $callbackUri, $allowLoopback, $acceptFellowshipSessions, $enabled, $current->revision, $current->createdAt, $now, $current->googleClientId, $current->googleClientSecret);
+
+        return true;
+    }
+
+    public function setGoogleClient(int $id, string $clientId, ?string $encryptedSecret, int $now): bool
+    {
+        $current = $this->rows[$id] ?? null;
+        if ($current === null) {
+            return false;
+        }
+
+        $this->rows[$id] = new Application(
+            $id,
+            $current->slug,
+            $current->name,
+            $current->callbackUri,
+            $current->allowLoopback,
+            $current->acceptFellowshipSessions,
+            $current->enabled,
+            $current->revision,
+            $current->createdAt,
+            $now,
+            $clientId,
+            $encryptedSecret ?? $current->googleClientSecret,
+        );
 
         return true;
     }
@@ -76,6 +101,8 @@ final class InMemoryApplicationRepository implements ApplicationRepository
             $next,
             $current->createdAt,
             $current->updatedAt,
+            $current->googleClientId,
+            $current->googleClientSecret,
         );
 
         return $next;

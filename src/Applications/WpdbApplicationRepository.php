@@ -17,7 +17,7 @@ final class WpdbApplicationRepository implements ApplicationRepository
 {
     public const TABLE_SUFFIX = 'freedom_applications';
 
-    private const COLUMNS = 'id, slug, name, callback_uri, allow_loopback, accept_fellowship_sessions, enabled, revision, created_at, updated_at';
+    private const COLUMNS = 'id, slug, name, callback_uri, allow_loopback, accept_fellowship_sessions, enabled, revision, created_at, updated_at, google_client_id, google_client_secret';
 
     /**
      * @return literal-string
@@ -58,6 +58,8 @@ final class WpdbApplicationRepository implements ApplicationRepository
             revision BIGINT UNSIGNED NOT NULL DEFAULT 0,
             created_at BIGINT UNSIGNED NOT NULL,
             updated_at BIGINT UNSIGNED NOT NULL,
+            google_client_id VARCHAR(255) NOT NULL DEFAULT '',
+            google_client_secret TEXT NULL,
             PRIMARY KEY  (id),
             UNIQUE KEY slug (slug)
         ) {$charset};";
@@ -134,6 +136,19 @@ final class WpdbApplicationRepository implements ApplicationRepository
         );
 
         return $updated !== false;
+    }
+
+    public function setGoogleClient(int $id, string $clientId, ?string $encryptedSecret, int $now): bool
+    {
+        $columns = ['google_client_id' => $clientId, 'updated_at' => $now];
+        $formats = ['%s', '%d'];
+
+        if ($encryptedSecret !== null) {
+            $columns['google_client_secret'] = $encryptedSecret;
+            $formats[] = '%s';
+        }
+
+        return $this->wpdb->update(self::tableName($this->wpdb), $columns, ['id' => $id], $formats, ['%d']) !== false;
     }
 
     public function findById(int $id): ?Application
@@ -231,6 +246,10 @@ final class WpdbApplicationRepository implements ApplicationRepository
             (int) ($row['revision'] ?? 0),
             (int) ($row['created_at'] ?? 0),
             (int) ($row['updated_at'] ?? 0),
+            (string) ($row['google_client_id'] ?? ''),
+            isset($row['google_client_secret']) && $row['google_client_secret'] !== ''
+                ? (string) $row['google_client_secret']
+                : null,
         );
     }
 }

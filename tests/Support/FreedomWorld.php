@@ -24,7 +24,11 @@ use Freedom\Auth\Pkce;
 use Freedom\Auth\SignInContext;
 use Freedom\Config\ConfigEditor;
 use Freedom\Config\ValueSealer;
+use Freedom\Auth\ClientSecrets;
 use Freedom\Core\Cipher;
+use Fellowship\Auth\AudienceProviders;
+use Guardian\Credentials\CredentialStore;
+use Guardian\Providers\OAuthProvider;
 use Freedom\Rest\ConfigController;
 use Freedom\Rest\SignInController;
 use Freedom\Rest\TabletController;
@@ -70,6 +74,14 @@ final class FreedomWorld
     public StateStore $states;
     public DeviceCodeStore $codes;
     public StubProvider $google;
+
+    /** What Fellowship builds when an application brings its own Google client. */
+    public StubProvider $ownGoogle;
+
+    /** @var list<string> The client id of every own-client provider built, in order. */
+    public array $ownClientsBuilt = [];
+
+    public ClientSecrets $secrets;
     public IdentityBroker $broker;
     public AudienceRegistry $audiences;
 
@@ -109,6 +121,7 @@ final class FreedomWorld
         $providers = new ProviderRegistry();
         $providers->register($this->google);
         $this->audiences = new AudienceRegistry(new LinkAudience(new DeviceRedirectValidator(), $this->memberGate));
+        $this->ownGoogle = new StubProvider('google', serverSide: true);
         $this->broker = new IdentityBroker(
             $this->audiences,
             $providers,
@@ -117,6 +130,11 @@ final class FreedomWorld
             new CurrentDevice($this->linkDevices, $this->linkMinter, $this->memberGate),
             $this->linkDevices,
             $this->memberGate,
+            new AudienceProviders($providers, function (string $name, CredentialStore $credentials): ?OAuthProvider {
+                $this->ownClientsBuilt[] = $credentials->getClientId($name);
+
+                return $this->ownGoogle;
+            }),
         );
 
         // Freedom.
@@ -134,7 +152,8 @@ final class FreedomWorld
         $this->enrolment = new Enrolment($this->tablets, $this->minter, $this->audit);
         $this->currentTablet = new CurrentTablet($this->tablets, $this->applications, $this->minter, $this->gate, $this->broker);
 
-        $this->broker->registerAudience(new FreedomAudience($this->applications, $this->gate));
+        $this->secrets = new ClientSecrets();
+        $this->broker->registerAudience(new FreedomAudience($this->applications, $this->gate, $this->secrets));
 
         $limiter = new RateLimiter();
         $this->signIn = new SignInController($this->applications, $this->broker, $this->gate, $this->enrolment, $this->hasher, $this->minter, $limiter);

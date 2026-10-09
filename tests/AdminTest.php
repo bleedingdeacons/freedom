@@ -39,7 +39,7 @@ beforeEach(function () {
     $this->world = new FreedomWorld();
     $w = $this->world;
     $this->tabletPage = new TabletPage($w->applications, $w->tablets, $w->values, $w->editor);
-    $this->appPage = new ApplicationPage($w->applications, $w->accounts, $w->tablets, $w->values, $w->editor, $w->audit, $w->members);
+    $this->appPage = new ApplicationPage($w->applications, $w->accounts, $w->tablets, $w->values, $w->editor, $w->audit, $w->members, $w->secrets);
     $this->list = new ApplicationsPage($w->applications, $w->tablets, $this->appPage, $this->tabletPage);
 });
 
@@ -84,6 +84,63 @@ test('details are saved, including disabling', function () {
     expect($this->appPage->saveFromRequest())->toBe('app_saved');
     expect($w->app()->name)->toBe('Register (hall)');
     expect($w->app()->enabled)->toBeFalse();
+});
+
+test('an application\'s own Google client is saved with its secret encrypted', function () {
+    $w = $this->world;
+    $_POST = ['app' => (string) $w->app->id, 'name' => 'Register', 'callback_uri' => FreedomWorld::CALLBACK, 'enabled' => '1',
+        'google_client_id' => 'register-tablets.apps.googleusercontent.com', 'google_client_secret' => ' register-secret '];
+
+    expect($this->appPage->saveFromRequest())->toBe('app_saved');
+    expect($w->app()->googleClientId)->toBe('register-tablets.apps.googleusercontent.com');
+    expect($w->app()->googleClientSecret)->not->toBe('register-secret');
+    expect($w->secrets->decrypt($w->app()->googleClientSecret))->toBe('register-secret');
+});
+
+test('a blank secret keeps the stored one', function () {
+    $w = $this->world;
+    $w->applications->setGoogleClient($w->app->id, 'old.apps.googleusercontent.com', $w->secrets->encrypt('kept'), 1);
+    $_POST = ['app' => (string) $w->app->id, 'name' => 'Register', 'callback_uri' => FreedomWorld::CALLBACK, 'enabled' => '1',
+        'google_client_id' => 'new.apps.googleusercontent.com', 'google_client_secret' => ''];
+
+    expect($this->appPage->saveFromRequest())->toBe('app_saved');
+    expect($w->app()->googleClientId)->toBe('new.apps.googleusercontent.com');
+    expect($w->secrets->decrypt($w->app()->googleClientSecret))->toBe('kept');
+});
+
+test('clearing the client id goes back to Fellowship\'s client and drops the secret', function () {
+    $w = $this->world;
+    $w->applications->setGoogleClient($w->app->id, 'old.apps.googleusercontent.com', $w->secrets->encrypt('gone'), 1);
+    $_POST = ['app' => (string) $w->app->id, 'name' => 'Register', 'callback_uri' => FreedomWorld::CALLBACK, 'enabled' => '1',
+        'google_client_id' => ''];
+
+    expect($this->appPage->saveFromRequest())->toBe('app_saved');
+    expect($w->app()->hasOwnGoogleClient())->toBeFalse();
+    expect($w->secrets->decrypt($w->app()->googleClientSecret))->toBeNull();
+});
+
+test('a Google client is refused before anything is saved', function (array $client, string $code) {
+    $w = $this->world;
+    $_POST = ['app' => (string) $w->app->id, 'name' => 'Renamed', 'callback_uri' => FreedomWorld::CALLBACK, 'enabled' => '1'] + $client;
+
+    expect($this->appPage->saveFromRequest())->toBe($code);
+    expect($w->app()->name)->toBe('Register');
+    expect($w->app()->hasOwnGoogleClient())->toBeFalse();
+})->with([
+    'a secret pasted into the id' => [['google_client_id' => 'GOCSPX-abc123', 'google_client_secret' => 'x'], 'bad_google_client'],
+    'an id with no secret at all' => [['google_client_id' => 'register.apps.googleusercontent.com'], 'google_secret_needed'],
+]);
+
+test('the details tab shows the client id, never the secret, and the redirect URI to register', function () {
+    $w = $this->world;
+    $w->applications->setGoogleClient($w->app->id, 'register-tablets.apps.googleusercontent.com', $w->secrets->encrypt('never-shown'), 1);
+
+    $html = captureOutput(fn() => $this->appPage->render($w->app->id, 'details'));
+
+    expect($html)->toContain('register-tablets.apps.googleusercontent.com')
+        ->toContain('fellowship/v1/auth/callback')
+        ->toContain('Stored. Leave blank to keep it.')
+        ->not->toContain('never-shown');
 });
 
 test('deleting an application takes everything under it', function () {
