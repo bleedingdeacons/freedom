@@ -33,6 +33,8 @@ trait AdminSupport
         'slug_taken'       => ['error', 'Another application already has that slug.'],
         'bad_callback'     => ['error', 'The callback must be a custom scheme such as org.example.app.freedom://auth — not http, https or link, and with no port, query or fragment.'],
         'bad_name'         => ['error', 'Give the application a name.'],
+        'bad_google_client' => ['error', 'A Google client ID ends in .apps.googleusercontent.com. Copy it from the Credentials page of the application\'s Google Cloud project.'],
+        'google_secret_needed' => ['error', 'Enter the Google client secret too. An application\'s own client needs both.'],
         'account_added'    => ['success', 'Common account added. Tablets signed in with it are admitted from now on.'],
         'account_removed'  => ['success', 'Common account removed. Its tablets are refused from their next request.'],
         'account_exists'   => ['error', 'That address is already listed.'],

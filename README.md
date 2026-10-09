@@ -104,6 +104,23 @@ The code is useless without the verifier. That matters because another
 app on the tablet that registers the same URI scheme can catch the
 redirect. Link has that exposure today; Freedom starts with it closed.
 
+**An application can sign in with its own Google client.** By default
+the sign-in uses Fellowship's Google client, so a Register tablet sees
+the consent screen Fellowship's client shows for Link. An application
+can carry its own Web application client from its own Google Cloud
+project instead: **Freedom > the application > Details > Google sign-in
+client**. Freedom implements Fellowship's `BringsOwnClient`, and
+Fellowship uses that client for the authorization URL, the code
+exchange and the ID-token check.
+
+- The secret is write-only, and encrypted under its own key domain
+  (`freedom-oauth-clients`), separate from the configuration values'.
+- Clearing the client ID goes back to Fellowship's client.
+- A secret that will not decrypt also falls back to Fellowship's client,
+  and the log says why.
+- The client must list Fellowship's callback as an authorized redirect
+  URI. The Details tab shows the exact address.
+
 **From a Link session.** Link has already signed in through Google, for
 Fellowship. A second trip through the browser would prove nothing new and
 would ask a member to sign in twice, so `POST /freedom/v1/auth/session`
@@ -275,14 +292,16 @@ Must agree. A change to any of these in Fellowship is a change to Freedom:
   `sessionFor`, `isLive`
 - `Fellowship\Auth\SignInAudience`, `BrokeredIdentity`, `LinkSession`,
   `VerifiedIdentity`
+- `Fellowship\Auth\BringsOwnClient` and `ProviderClient`, for an
+  application's own Google client (Fellowship 2.8.0)
 - `Fellowship\Devices\MemberGate`
 - `Fellowship\Crypto\MessageSealer`, `DevicePublicKey` (the envelope)
 - `Fellowship\Core\RateLimiter`
 - the `fellowship/loaded` action, which Freedom boots on
 
-Freedom checks for `IdentityBroker` when it boots and says which
-Fellowship version it needs if the class is missing (`Requires Plugins`
-cannot check versions).
+Freedom checks for `IdentityBroker` and `BringsOwnClient` when it boots.
+If either is missing it says which Fellowship version it needs, 2.8.0
+(`Requires Plugins` cannot check versions).
 
 ## Conventions
 

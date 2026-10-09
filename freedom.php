@@ -34,11 +34,13 @@ define('FREEDOM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('FREEDOM_PLUGIN_FILE', __FILE__);
 
 /**
- * The first Fellowship release with the IdentityBroker. Named in the
- * admin notice, because `Requires Plugins` checks that Fellowship is
- * active and nothing about which version.
+ * The first Fellowship release with everything Freedom uses: the
+ * IdentityBroker (2.5.0) and BringsOwnClient, through which an application
+ * signs in with its own Google client (2.8.0). Named in the admin notice,
+ * because `Requires Plugins` checks that Fellowship is active and nothing
+ * about which version.
  */
-define('FREEDOM_MIN_FELLOWSHIP', '2.5.0');
+define('FREEDOM_MIN_FELLOWSHIP', '2.8.0');
 
 // Autoloader for the Freedom namespace.
 spl_autoload_register(function ($class) {
@@ -84,7 +86,10 @@ add_action('fellowship/loaded', function ($container) {
             throw new \Exception('Scrutiny plugin is required but not active. Please install and activate Scrutiny before using Freedom.');
         }
 
-        if (!class_exists('Fellowship\Auth\IdentityBroker')) {
+        // BringsOwnClient as well as the broker: FreedomAudience implements
+        // it, and an interface that does not exist is a fatal error the
+        // moment the audience is loaded, not a feature quietly missing.
+        if (!class_exists('Fellowship\Auth\IdentityBroker') || !interface_exists('Fellowship\Auth\BringsOwnClient')) {
             throw new \Exception(sprintf(
                 'Freedom needs Fellowship %s or later, which signs tablets in on its behalf. Please update Fellowship.',
                 FREEDOM_MIN_FELLOWSHIP,

@@ -23,7 +23,7 @@ One tablet can be given its own value for any key. Removing it hands the tablet 
 
 == Installation ==
 
-1. Install and activate Unity, Scrutiny and Fellowship first. Freedom refuses to activate without them, and needs a Fellowship with the IdentityBroker (2.5.0 or later).
+1. Install and activate Unity, Scrutiny and Fellowship first. Freedom refuses to activate without them, and needs Fellowship 2.8.0 or later, for its IdentityBroker and for an application's own Google client.
 2. Activate Freedom. Its tables are created on activation, and repaired on load if a later version adds one.
 3. Under **Freedom**, add an application. Its slug and callback URI must match what is built into the app.
 4. Add the shared Google accounts the application's tablets sign in with, under **Common accounts**. Members can always sign in with their own.

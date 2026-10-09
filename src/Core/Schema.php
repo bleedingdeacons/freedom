@@ -34,8 +34,10 @@ final class Schema
      * Schema version. Bump on any change to a CREATE TABLE.
      *
      * 1 — applications, common accounts, tablets and values.
+     * 2 — an application's own Google client: google_client_id and
+     *     google_client_secret on freedom_applications.
      */
-    public const VERSION = 1;
+    public const VERSION = 2;
 
     public const OPTION = 'freedom_schema_version';
 
