@@ -160,7 +160,9 @@ final class FreedomWorld
         $this->config = new ConfigController($this->currentTablet, $this->values, $this->editor, new ValueSealer(new MessageSealer()), $limiter);
         $this->tablet = new TabletController($this->currentTablet, $this->tablets, $this->audit);
 
-        $this->app = $this->applications->add('register', self::CALLBACK, allowLoopback: true, acceptFellowshipSessions: false);
+        // Members allowed, so the sign-in tests can use a member's account;
+        // MemberAccountsTest covers an application that does not allow them.
+        $this->app = $this->applications->add('register', self::CALLBACK, allowLoopback: true, acceptFellowshipSessions: false, allowMemberAccounts: true);
         $this->accounts->add($this->app->id, self::TABLET_ACCOUNT, 'Register tablets', 1, 1_700_000_000);
     }
 

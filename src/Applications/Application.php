@@ -27,6 +27,13 @@ if (!defined('ABSPATH')) {
  * the one Fellowship's client shows for Link. Empty means Fellowship's.
  * `googleClientSecret` is the stored ciphertext, never the secret itself;
  * see {@see \Freedom\Auth\FreedomAudience::clientFor()}.
+ *
+ * <b>`allowMemberAccounts` lets a member's own Google account sign a tablet
+ * in.</b> Off, only the application's common accounts may. Off is the
+ * default because a tablet receives every secret the application holds —
+ * Register's SMTP password and Unity API key among them — and any member
+ * can script a sign-in from a device that is no tablet at all. See
+ * {@see \Freedom\Tablets\TabletGate}.
  */
 final class Application
 {
@@ -51,6 +58,7 @@ final class Application
         public readonly int $updatedAt,
         public readonly string $googleClientId = '',
         public readonly ?string $googleClientSecret = null,
+        public readonly bool $allowMemberAccounts = false,
     ) {
     }
 

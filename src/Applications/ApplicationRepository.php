@@ -26,6 +26,7 @@ interface ApplicationRepository
         string $callbackUri,
         bool $allowLoopback,
         bool $acceptFellowshipSessions,
+        bool $allowMemberAccounts,
         bool $enabled,
         int $now,
     ): bool;

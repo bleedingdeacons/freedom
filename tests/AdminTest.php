@@ -84,6 +84,30 @@ test('details are saved, including disabling', function () {
     expect($this->appPage->saveFromRequest())->toBe('app_saved');
     expect($w->app()->name)->toBe('Register (hall)');
     expect($w->app()->enabled)->toBeFalse();
+    // An unticked box is a no, for members' accounts as for the rest.
+    expect($w->app()->allowMemberAccounts)->toBeFalse();
+});
+
+test('members\' own accounts are allowed only when the box is ticked', function () {
+    $w = $this->world;
+    $w->applications->allowMembers($w->app->id, false);
+    $_POST = ['app' => (string) $w->app->id, 'name' => 'Register', 'callback_uri' => FreedomWorld::CALLBACK, 'enabled' => '1',
+        'allow_member_accounts' => '1'];
+
+    expect($this->appPage->saveFromRequest())->toBe('app_saved');
+    expect($w->app()->allowMemberAccounts)->toBeTrue();
+});
+
+test('the details tab offers the members switch, and the accounts tab says which way it is set', function () {
+    $w = $this->world;
+    $w->applications->allowMembers($w->app->id, false);
+
+    $details = captureOutput(fn() => $this->appPage->render($w->app->id, 'details'));
+    $accounts = captureOutput(fn() => $this->appPage->render($w->app->id, 'accounts'));
+
+    expect($details)->toContain('name="allow_member_accounts"')
+        ->and($details)->not->toMatch('/name="allow_member_accounts" value="1" checked/');
+    expect($accounts)->toContain('own accounts are not accepted unless allowed under Details');
 });
 
 test('an application\'s own Google client is saved with its secret encrypted', function () {

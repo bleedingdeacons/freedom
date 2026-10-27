@@ -27,14 +27,14 @@ final class InMemoryApplicationRepository implements ApplicationRepository
         return $application;
     }
 
-    public function update(int $id, string $name, string $callbackUri, bool $allowLoopback, bool $acceptFellowshipSessions, bool $enabled, int $now): bool
+    public function update(int $id, string $name, string $callbackUri, bool $allowLoopback, bool $acceptFellowshipSessions, bool $allowMemberAccounts, bool $enabled, int $now): bool
     {
         $current = $this->rows[$id] ?? null;
         if ($current === null) {
             return false;
         }
 
-        $this->rows[$id] = new Application($id, $current->slug, $name, $callbackUri, $allowLoopback, $acceptFellowshipSessions, $enabled, $current->revision, $current->createdAt, $now, $current->googleClientId, $current->googleClientSecret);
+        $this->rows[$id] = new Application($id, $current->slug, $name, $callbackUri, $allowLoopback, $acceptFellowshipSessions, $enabled, $current->revision, $current->createdAt, $now, $current->googleClientId, $current->googleClientSecret, $allowMemberAccounts);
 
         return true;
     }
@@ -59,6 +59,7 @@ final class InMemoryApplicationRepository implements ApplicationRepository
             $now,
             $clientId,
             $encryptedSecret ?? $current->googleClientSecret,
+            $current->allowMemberAccounts,
         );
 
         return true;
@@ -103,6 +104,7 @@ final class InMemoryApplicationRepository implements ApplicationRepository
             $current->updatedAt,
             $current->googleClientId,
             $current->googleClientSecret,
+            $current->allowMemberAccounts,
         );
 
         return $next;
@@ -123,12 +125,20 @@ final class InMemoryApplicationRepository implements ApplicationRepository
         bool $allowLoopback = false,
         bool $acceptFellowshipSessions = false,
         bool $enabled = true,
+        bool $allowMemberAccounts = false,
     ): Application {
         $created = $this->create($slug, ucfirst($slug), $callbackUri, $allowLoopback, $acceptFellowshipSessions, 1_700_000_000);
-        if (!$enabled) {
-            $this->update($created->id, $created->name, $callbackUri, $allowLoopback, $acceptFellowshipSessions, false, 1_700_000_000);
+        if (!$enabled || $allowMemberAccounts) {
+            $this->update($created->id, $created->name, $callbackUri, $allowLoopback, $acceptFellowshipSessions, $allowMemberAccounts, $enabled, 1_700_000_000);
         }
 
         return $this->rows[$created->id];
+    }
+
+    /** Test convenience: turn members' own accounts on or off for an application. */
+    public function allowMembers(int $id, bool $allowed): void
+    {
+        $current = $this->rows[$id] ?? throw new RuntimeException('no such application');
+        $this->update($id, $current->name, $current->callbackUri, $current->allowLoopback, $current->acceptFellowshipSessions, $allowed, $current->enabled, $current->updatedAt);
     }
 }

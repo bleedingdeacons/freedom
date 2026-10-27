@@ -164,6 +164,7 @@ final class ApplicationPage
             $callback,
             $this->postedFlag('allow_loopback'),
             $this->postedFlag('accept_fellowship_sessions'),
+            $this->postedFlag('allow_member_accounts'),
             $this->postedFlag('enabled'),
             time(),
         );
@@ -496,7 +497,11 @@ final class ApplicationPage
         $accounts = $this->accounts->forApplication($application->id);
 
         echo '<p class="description">'
-            . esc_html__('Any Unity member may sign a tablet in with their own Google account. These are the other accounts that may: shared accounts that tablets use and that belong to no member. A tablet signed in with one is not tied to anybody\'s membership.', 'freedom')
+            . esc_html(
+                $application->allowMemberAccounts
+                    ? __('Any Unity member may sign a tablet in with their own Google account, because this application allows it (Details). These are the other accounts that may: shared accounts that tablets use and that belong to no member. A tablet signed in with one is not tied to anybody\'s membership.', 'freedom')
+                    : __('These are the only accounts that may sign a tablet in: shared accounts that tablets use and that belong to no member. Members\' own accounts are not accepted unless allowed under Details.', 'freedom'),
+            )
             . '</p>';
 
         if ($accounts !== []) {
@@ -525,7 +530,11 @@ final class ApplicationPage
 
             echo '</tbody></table>';
         } else {
-            echo '<p>' . esc_html__('No common accounts. Only members can sign tablets in.', 'freedom') . '</p>';
+            echo '<p>' . esc_html(
+                $application->allowMemberAccounts
+                    ? __('No common accounts. Only members can sign tablets in.', 'freedom')
+                    : __('No common accounts, and members\' own accounts are not allowed: no tablet can sign in. Add an account below.', 'freedom'),
+            ) . '</p>';
         }
 
         echo '<h2>' . esc_html__('Add a common account', 'freedom') . '</h2>';
@@ -666,6 +675,9 @@ final class ApplicationPage
         echo '<tr><th scope="row">' . esc_html__('Sign-in', 'freedom') . '</th><td>'
             . '<label><input type="checkbox" name="accept_fellowship_sessions" value="1"' . checked($application->acceptFellowshipSessions, true, false) . '> '
             . esc_html__('Accept a Link session instead of a second sign-in', 'freedom') . '</label><br>'
+            . '<label><input type="checkbox" name="allow_member_accounts" value="1"' . checked($application->allowMemberAccounts, true, false) . '> '
+            . esc_html__('Let members sign tablets in with their own Google accounts', 'freedom') . '</label>'
+            . '<p class="description">' . esc_html__('A tablet receives every value here, secrets included, and any member could sign in from a device of their own. Leave this off for an application holding passwords or API keys, and use common accounts. Turning it off cuts off members\' tablets from their next request.', 'freedom') . '</p>'
             . '<label><input type="checkbox" name="allow_loopback" value="1"' . checked($application->allowLoopback, true, false) . '> '
             . esc_html__('Allow a loopback callback — development only', 'freedom') . '</label></td></tr>';
         echo '<tr><th scope="row">' . esc_html__('Status', 'freedom') . '</th><td>'
