@@ -17,7 +17,7 @@ final class WpdbApplicationRepository implements ApplicationRepository
 {
     public const TABLE_SUFFIX = 'freedom_applications';
 
-    private const COLUMNS = 'id, slug, name, callback_uri, allow_loopback, accept_fellowship_sessions, enabled, revision, created_at, updated_at, google_client_id, google_client_secret';
+    private const COLUMNS = 'id, slug, name, callback_uri, allow_loopback, accept_fellowship_sessions, allow_member_accounts, enabled, revision, created_at, updated_at, google_client_id, google_client_secret';
 
     /**
      * @return literal-string
@@ -54,6 +54,7 @@ final class WpdbApplicationRepository implements ApplicationRepository
             callback_uri VARCHAR(255) NOT NULL DEFAULT '',
             allow_loopback TINYINT(1) NOT NULL DEFAULT 0,
             accept_fellowship_sessions TINYINT(1) NOT NULL DEFAULT 0,
+            allow_member_accounts TINYINT(1) NOT NULL DEFAULT 0,
             enabled TINYINT(1) NOT NULL DEFAULT 1,
             revision BIGINT UNSIGNED NOT NULL DEFAULT 0,
             created_at BIGINT UNSIGNED NOT NULL,
@@ -85,12 +86,14 @@ final class WpdbApplicationRepository implements ApplicationRepository
                 'callback_uri'               => $callbackUri,
                 'allow_loopback'             => $allowLoopback ? 1 : 0,
                 'accept_fellowship_sessions' => $acceptFellowshipSessions ? 1 : 0,
+                // Members are opted in afterwards, by an admin, if ever.
+                'allow_member_accounts'      => 0,
                 'enabled'                    => 1,
                 'revision'                   => 0,
                 'created_at'                 => $now,
                 'updated_at'                 => $now,
             ],
-            ['%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d'],
+            ['%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d'],
         );
 
         if ($inserted === false || (int) $this->wpdb->insert_id <= 0) {
@@ -117,6 +120,7 @@ final class WpdbApplicationRepository implements ApplicationRepository
         string $callbackUri,
         bool $allowLoopback,
         bool $acceptFellowshipSessions,
+        bool $allowMemberAccounts,
         bool $enabled,
         int $now,
     ): bool {
@@ -127,11 +131,12 @@ final class WpdbApplicationRepository implements ApplicationRepository
                 'callback_uri'               => $callbackUri,
                 'allow_loopback'             => $allowLoopback ? 1 : 0,
                 'accept_fellowship_sessions' => $acceptFellowshipSessions ? 1 : 0,
+                'allow_member_accounts'      => $allowMemberAccounts ? 1 : 0,
                 'enabled'                    => $enabled ? 1 : 0,
                 'updated_at'                 => $now,
             ],
             ['id' => $id],
-            ['%s', '%s', '%d', '%d', '%d', '%d'],
+            ['%s', '%s', '%d', '%d', '%d', '%d', '%d'],
             ['%d'],
         );
 
@@ -250,6 +255,7 @@ final class WpdbApplicationRepository implements ApplicationRepository
             isset($row['google_client_secret']) && $row['google_client_secret'] !== ''
                 ? (string) $row['google_client_secret']
                 : null,
+            (bool) (int) ($row['allow_member_accounts'] ?? 0),
         );
     }
 }

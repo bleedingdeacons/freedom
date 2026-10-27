@@ -81,7 +81,7 @@ test('start refuses what the application does not allow', function (array $param
 
 test('start refuses a disabled application', function () {
     $w = $this->world;
-    $w->applications->update($w->app->id, 'Register', FreedomWorld::CALLBACK, true, false, false, 1);
+    $w->applications->update($w->app->id, 'Register', FreedomWorld::CALLBACK, true, false, true, false, 1);
 
     $response = $w->signIn->start($w->request([
         'application'    => 'register',
@@ -289,7 +289,7 @@ test('an application has a cap on tablets', function () {
 
 test('a Link session enrols a tablet with no browser at all', function () {
     $w = $this->world;
-    $link = $w->applications->add('link', '', acceptFellowshipSessions: true);
+    $link = $w->applications->add('link', '', acceptFellowshipSessions: true, allowMemberAccounts: true);
 
     $response = $w->signIn->session($w->request([
         'application' => 'link',
@@ -310,7 +310,7 @@ test('a Link session enrols a tablet with no browser at all', function () {
 
 test('the same Link device handing over again re-attaches', function () {
     $w = $this->world;
-    $w->applications->add('link', '', acceptFellowshipSessions: true);
+    $w->applications->add('link', '', acceptFellowshipSessions: true, allowMemberAccounts: true);
     $token = $w->linkToken();
     $params = ['application' => 'link', 'public_key' => FreedomWorld::keypair()[1]];
 
@@ -331,7 +331,7 @@ test('an application that has not opted in refuses a Link session', function () 
 
 test('anything Link itself would refuse is refused', function (string $case) {
     $w = $this->world;
-    $w->applications->add('link', '', acceptFellowshipSessions: true);
+    $w->applications->add('link', '', acceptFellowshipSessions: true, allowMemberAccounts: true);
     $token = $w->linkToken();
 
     $presented = match ($case) {

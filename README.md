@@ -49,12 +49,19 @@ the app is left holding.
 
 ## Who gets in
 
-Two kinds of Google account, both always accepted and with no approval
-step:
+Two kinds of Google account, with no approval step:
 
-- **Any Unity member's own account.** Decided by Fellowship's
-  `MemberGate`, so a member here is exactly who is a member for Link.
-- **The application's common tablet accounts.** A register tablet at an
+- **A Unity member's own account, only where the application allows it.**
+  Decided by Fellowship's `MemberGate`, so a member here is exactly who is
+  a member for Link. **Off by default**, and off for every existing
+  application from schema version 3: a tablet receives every value the
+  application holds, secrets included, and nothing proves the "tablet" is
+  one — a member can script the sign-in from any device with a key pair of
+  their own. For Register that handed every member the SMTP password and
+  the Unity API key. Turn it on, under Details, only for an application
+  whose values are no secret from its members. A Link session is a
+  member's, so it needs this too.
+- **The application's common tablet accounts, always.** A register tablet at an
   intergroup meeting is nobody's phone. Signing it in with a member's own
   account would tie it to that member: their removal from Unity would
   revoke it mid-meeting, and their personal account would be on a device
@@ -66,9 +73,10 @@ The check runs:
 - **In the browser**, so a stranger is told where they can read it
   (`not_authorised`).
 - **At enrolment**, where the tablet row is written.
-- **On every request after that.** Removing a member from Unity, or taking
-  an account off the list, stops the configuration at the tablet's next
-  start rather than whenever somebody remembers to revoke the tablet.
+- **On every request after that.** Removing a member from Unity, taking
+  an account off the list, or turning members' accounts off for the
+  application stops the configuration at the tablet's next start rather
+  than whenever somebody remembers to revoke the tablet.
   Putting the account back restores it without anybody signing in again.
 
 Admins can still see, revoke, block and remove tablets.

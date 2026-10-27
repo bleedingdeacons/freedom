@@ -217,7 +217,7 @@ test('a member removed from Unity is refused at the next request', function () {
 
 test('a disabled application is a suspension, not a refusal', function () {
     $w = $this->world;
-    $w->applications->update($w->app->id, 'Register', FreedomWorld::CALLBACK, true, false, false, 1);
+    $w->applications->update($w->app->id, 'Register', FreedomWorld::CALLBACK, true, false, true, false, 1);
 
     $response = $w->config->manifest($w->request([], $this->token));
 
@@ -227,7 +227,7 @@ test('a disabled application is a suspension, not a refusal', function () {
 
 test('a tablet handed over from Link goes when Link\'s enrolment goes', function () {
     $w = $this->world;
-    $w->applications->add('link', '', acceptFellowshipSessions: true);
+    $w->applications->add('link', '', acceptFellowshipSessions: true, allowMemberAccounts: true);
     $linkToken = $w->linkToken();
     $data = (array) $w->signIn->session($w->request(['application' => 'link', 'public_key' => FreedomWorld::keypair()[1]], $linkToken))->get_data();
 

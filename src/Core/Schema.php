@@ -36,8 +36,11 @@ final class Schema
      * 1 — applications, common accounts, tablets and values.
      * 2 — an application's own Google client: google_client_id and
      *     google_client_secret on freedom_applications.
+     * 3 — allow_member_accounts on freedom_applications, 0 for every
+     *     existing row: members' own accounts stop signing tablets in until
+     *     an admin allows them per application.
      */
-    public const VERSION = 2;
+    public const VERSION = 3;
 
     public const OPTION = 'freedom_schema_version';
 
