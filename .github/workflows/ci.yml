@@ -81,6 +81,10 @@ jobs:
           repository: bleedingdeacons/fellowship
           ref: main
           path: fellowship
+          # Fellowship is a private repository, and the default token can read
+          # only this one. A read-only deploy key on Fellowship, held here and
+          # in Dependabot's secrets, so its pull requests can check it out too.
+          ssh-key: ${{ secrets.FELLOWSHIP_DEPLOY_KEY }}
 
       - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
@@ -378,6 +382,10 @@ jobs:
           repository: bleedingdeacons/fellowship
           ref: main
           path: fellowship
+          # Fellowship is a private repository, and the default token can read
+          # only this one. A read-only deploy key on Fellowship, held here and
+          # in Dependabot's secrets, so its pull requests can check it out too.
+          ssh-key: ${{ secrets.FELLOWSHIP_DEPLOY_KEY }}
 
       - name: Setup PHP 8.4
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
