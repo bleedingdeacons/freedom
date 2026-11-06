@@ -195,7 +195,7 @@ final class SignInController
             $application,
             $this->hasher->hash($application->slug, $deviceId),
             $admission,
-            0,
+            '',
             Enrolment::VIA_BROWSER,
         );
     }
@@ -233,12 +233,17 @@ final class SignInController
             return $this->notAuthorised();
         }
 
+        // A number for a device in Fellowship's own table, and text for one on
+        // Firebase. Stringified, a number hashes as it always did, so a tablet
+        // already enrolled through it is still recognised.
+        $linkDeviceId = (string) $session->deviceId;
+
         return $this->enrol(
             $request,
             $application,
-            $this->hasher->forFellowshipDevice($application->slug, $session->deviceId),
+            $this->hasher->forFellowshipDevice($application->slug, $linkDeviceId),
             $admission,
-            $session->deviceId,
+            $linkDeviceId,
             Enrolment::VIA_LINK,
         );
     }
@@ -248,7 +253,7 @@ final class SignInController
         Application $application,
         string $deviceHash,
         Admission $admission,
-        int $fellowshipDeviceId,
+        string $fellowshipDeviceId,
         string $via,
     ): WP_REST_Response|WP_Error {
         $publicKey = DevicePublicKey::normalise((string) $request->get_param('public_key'));

@@ -42,7 +42,7 @@ final class DeviceIdHasher
         return hash_hmac('sha256', $applicationSlug . '|' . $deviceId, $this->key());
     }
 
-    public function forFellowshipDevice(string $applicationSlug, int $fellowshipDeviceId): string
+    public function forFellowshipDevice(string $applicationSlug, string $fellowshipDeviceId): string
     {
         return $this->hash($applicationSlug, self::FELLOWSHIP_PREFIX . $fellowshipDeviceId);
     }

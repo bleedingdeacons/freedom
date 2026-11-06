@@ -302,7 +302,8 @@ test('a Link session enrols a tablet with no browser at all', function () {
 
     $tablet = $w->tablets->findById((int) ((array) $response->get_data())['tablet']['id']);
     expect($tablet->applicationId)->toBe($link->id);
-    expect($tablet->fellowshipDeviceId)->toBeGreaterThan(0);
+    expect($tablet->fellowshipDeviceId)->not->toBe('');
+    expect($tablet->isLinkSession())->toBeTrue();
     expect($tablet->accountKind)->toBe('member');
     // Nothing went through the browser leg.
     expect($w->google->identity)->not->toBeNull();

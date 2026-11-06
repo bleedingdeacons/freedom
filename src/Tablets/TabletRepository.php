@@ -16,7 +16,7 @@ interface TabletRepository
         string $deviceHash,
         string $tokenHash,
         Admission $admission,
-        int $fellowshipDeviceId,
+        string $fellowshipDeviceId,
         TabletProfile $profile,
         int $now,
     ): Tablet;
@@ -29,7 +29,7 @@ interface TabletRepository
         int $id,
         string $tokenHash,
         Admission $admission,
-        int $fellowshipDeviceId,
+        string $fellowshipDeviceId,
         TabletProfile $profile,
         int $now,
     ): bool;

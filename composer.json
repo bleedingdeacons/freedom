@@ -55,7 +55,7 @@
         "phpstan": "phpstan analyse --memory-limit=1G"
     },
     "require-dev": {
-        "bleedingdeacons/guardian": "^1.0",
+        "bleedingdeacons/guardian": "^1.2",
         "bleedingdeacons/wp-mocks": "^3.0",
         "mockery/mockery": "^1.6",
         "pestphp/pest": "^5.2",

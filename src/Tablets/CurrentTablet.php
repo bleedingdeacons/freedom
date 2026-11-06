@@ -67,7 +67,7 @@ final class CurrentTablet
         // A Link session ends when Link's does. Answered as a 401, like a
         // revoked token: the tablet signs in again (the app hands the new
         // Link session over), rather than being told it is not allowed.
-        if ($tablet->isLinkSession() && !$this->broker->isLive($tablet->fellowshipDeviceId)) {
+        if ($tablet->isLinkSession() && !$this->broker->isLive(self::linkDeviceId($tablet->fellowshipDeviceId))) {
             return TabletResolution::refused(TabletResolution::UNAUTHENTICATED);
         }
 
@@ -81,5 +81,14 @@ final class CurrentTablet
         }
 
         return TabletResolution::found($tablet, $application);
+    }
+
+    /**
+     * A number stays a number, because a Fellowship from before Firebase takes only
+     * an int and these two plugins aren't updated at the same moment.
+     */
+    private static function linkDeviceId(string $stored): int|string
+    {
+        return ctype_digit($stored) ? (int) $stored : $stored;
     }
 }

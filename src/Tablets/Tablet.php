@@ -33,7 +33,7 @@ final class Tablet
         public readonly string $accountEmail,
         public readonly int $memberId,
         public readonly int $accountId,
-        public readonly int $fellowshipDeviceId,
+        public readonly string $fellowshipDeviceId,
         public readonly string $label,
         public readonly string $platform,
         public readonly string $model,
@@ -72,6 +72,6 @@ final class Tablet
     /** Enrolled by handing over a Link session rather than through the browser. */
     public function isLinkSession(): bool
     {
-        return $this->fellowshipDeviceId > 0;
+        return $this->fellowshipDeviceId !== '';
     }
 }
