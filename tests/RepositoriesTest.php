@@ -95,7 +95,7 @@ test('a re-attachment cannot land on a blocked tablet', function () {
         5,
         str_repeat('b', 64),
         Admission::member('m@example.org', 7),
-        0,
+        '',
         new TabletProfile('l', 'android', 'm', '1', 'k'),
         100,
     );
@@ -103,6 +103,35 @@ test('a re-attachment cannot land on a blocked tablet', function () {
     expect($ok)->toBeFalse();
     expect($this->wpdb->lastQuery())->toContain('blocked_at IS NULL')->toContain('revoked_at = NULL');
 });
+
+test('a Firebase device id is kept as text, where a number would have become zero', function () {
+    $this->wpdb->queryResult = 1;
+
+    (new WpdbTabletRepository($this->wpdb))->reattach(
+        5,
+        str_repeat('b', 64),
+        Admission::member('m@example.org', 7),
+        'd_abc',
+        new TabletProfile('l', 'android', 'm', '1', 'k'),
+        100,
+    );
+
+    expect($this->wpdb->lastQuery())->toContain("fellowship_device_id = 'd_abc'");
+});
+
+test('a stored Link device id reads back, and a zero from the old column reads as none', function (mixed $stored, string $id, bool $linked) {
+    $this->wpdb->results = [['id' => 5, 'application_id' => 1, 'fellowship_device_id' => $stored]];
+
+    $tablet = (new WpdbTabletRepository($this->wpdb))->findById(5);
+
+    expect($tablet->fellowshipDeviceId)->toBe($id);
+    expect($tablet->isLinkSession())->toBe($linked);
+})->with([
+    'a device on Firebase'        => ['d_abc', 'd_abc', true],
+    'one from Fellowship\'s table' => ['12', '12', true],
+    'none, from the old column'   => ['0', '', false],
+    'none'                        => ['', '', false],
+]);
 
 test('erasing a member revokes only tablets their own account enrolled', function () {
     (new WpdbTabletRepository($this->wpdb))->revokeAllForMember('M@Example.org', 100);
@@ -146,7 +175,7 @@ test('a failed insert is an exception, not a row that does not exist', function 
         str_repeat('a', 64),
         str_repeat('b', 64),
         Admission::common('t@example.org', 1),
-        0,
+        '',
         new TabletProfile('l', 'android', 'm', '1', 'k'),
         100,
     ))->toThrow(RuntimeException::class);
@@ -159,6 +188,7 @@ test('the schema installs every table, with the uniques the rules need', functio
 
     $sql = implode("\n", $GLOBALS['__freedom_dbdelta']);
     expect($GLOBALS['__freedom_dbdelta'])->toHaveCount(4);
+    expect($sql)->toContain('fellowship_device_id VARCHAR(128)');
     expect($sql)->toContain('UNIQUE KEY slug')
         ->toContain('google_client_id VARCHAR(255)')
         ->toContain('google_client_secret TEXT')

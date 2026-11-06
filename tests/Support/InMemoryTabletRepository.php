@@ -20,7 +20,7 @@ final class InMemoryTabletRepository implements TabletRepository
 
     private int $nextId = 1;
 
-    public function create(int $applicationId, string $deviceHash, string $tokenHash, Admission $admission, int $fellowshipDeviceId, TabletProfile $profile, int $now): Tablet
+    public function create(int $applicationId, string $deviceHash, string $tokenHash, Admission $admission, string $fellowshipDeviceId, TabletProfile $profile, int $now): Tablet
     {
         $tablet = new Tablet(
             $this->nextId++,
@@ -50,7 +50,7 @@ final class InMemoryTabletRepository implements TabletRepository
         return $tablet;
     }
 
-    public function reattach(int $id, string $tokenHash, Admission $admission, int $fellowshipDeviceId, TabletProfile $profile, int $now): bool
+    public function reattach(int $id, string $tokenHash, Admission $admission, string $fellowshipDeviceId, TabletProfile $profile, int $now): bool
     {
         $row = $this->rows[$id] ?? null;
         if ($row === null || $row['tablet']->isBlocked()) {

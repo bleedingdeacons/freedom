@@ -85,7 +85,8 @@ test('a device hash is keyed, and scoped to the application', function () {
     expect($register)->toMatch('/^[0-9a-f]{64}$/');
     expect($register)->not->toBe(hash('sha256', 'register|android-0001'));
     expect($hasher->hash('link', 'android-0001'))->not->toBe($register);
-    expect($hasher->forFellowshipDevice('link', 12))->toBe($hasher->hash('link', 'fellowship:12'));
+    expect($hasher->forFellowshipDevice('link', '12'))->toBe($hasher->hash('link', 'fellowship:12'));
+    expect($hasher->forFellowshipDevice('link', 'd_abc'))->toBe($hasher->hash('link', 'fellowship:d_abc'));
 });
 
 test('a device identifier is refused outside its shape', function (string $id, bool $ok) {

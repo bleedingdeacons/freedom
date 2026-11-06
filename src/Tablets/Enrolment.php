@@ -63,7 +63,7 @@ final class Enrolment
         Application $application,
         string $deviceHash,
         Admission $admission,
-        int $fellowshipDeviceId,
+        string $fellowshipDeviceId,
         TabletProfile $profile,
         string $via,
     ): array|WP_Error {

@@ -58,7 +58,7 @@ final class WpdbTabletRepository implements TabletRepository
             account_email VARCHAR(254) NOT NULL DEFAULT '',
             member_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
             account_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
-            fellowship_device_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            fellowship_device_id VARCHAR(128) NOT NULL DEFAULT '',
             label VARCHAR(200) NOT NULL DEFAULT '',
             platform VARCHAR(32) NOT NULL DEFAULT '',
             model VARCHAR(100) NOT NULL DEFAULT '',
@@ -85,7 +85,7 @@ final class WpdbTabletRepository implements TabletRepository
         string $deviceHash,
         string $tokenHash,
         Admission $admission,
-        int $fellowshipDeviceId,
+        string $fellowshipDeviceId,
         TabletProfile $profile,
         int $now,
     ): Tablet {
@@ -110,7 +110,7 @@ final class WpdbTabletRepository implements TabletRepository
                 'created_at'           => $now,
                 'last_seen_at'         => $now,
             ],
-            ['%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%d'],
+            ['%d', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d'],
         );
 
         // As in Fellowship's device table: an unchecked failed insert would
@@ -151,7 +151,7 @@ final class WpdbTabletRepository implements TabletRepository
         int $id,
         string $tokenHash,
         Admission $admission,
-        int $fellowshipDeviceId,
+        string $fellowshipDeviceId,
         TabletProfile $profile,
         int $now,
     ): bool {
@@ -163,7 +163,7 @@ final class WpdbTabletRepository implements TabletRepository
         $affected = $this->execute($this->wpdb->prepare(
             "UPDATE {$table}
                 SET token_hash = %s, account_kind = %s, account_email = %s, member_id = %d, account_id = %d,
-                    fellowship_device_id = %d, label = %s, platform = %s, model = %s, app_version = %s,
+                    fellowship_device_id = %s, label = %s, platform = %s, model = %s, app_version = %s,
                     public_key = %s, key_fault_at = NULL, revoked_at = NULL, reattached_at = %d, last_seen_at = %d
               WHERE id = %d AND blocked_at IS NULL",
             $tokenHash,
@@ -357,7 +357,7 @@ final class WpdbTabletRepository implements TabletRepository
             (string) ($row['account_email'] ?? ''),
             (int) ($row['member_id'] ?? 0),
             (int) ($row['account_id'] ?? 0),
-            (int) ($row['fellowship_device_id'] ?? 0),
+            self::fellowshipDeviceId($row['fellowship_device_id'] ?? ''),
             (string) ($row['label'] ?? ''),
             (string) ($row['platform'] ?? ''),
             (string) ($row['model'] ?? ''),
@@ -371,5 +371,13 @@ final class WpdbTabletRepository implements TabletRepository
             $nullable($row['revoked_at'] ?? null),
             $nullable($row['blocked_at'] ?? null),
         );
+    }
+
+    /** A row from when this column was a number holds '0' for no Link session. */
+    private static function fellowshipDeviceId(mixed $stored): string
+    {
+        $id = (string) $stored;
+
+        return $id === '0' ? '' : $id;
     }
 }

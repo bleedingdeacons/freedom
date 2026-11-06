@@ -39,8 +39,10 @@ final class Schema
      * 3 — allow_member_accounts on freedom_applications, 0 for every
      *     existing row: members' own accounts stop signing tablets in until
      *     an admin allows them per application.
+     * 4 — fellowship_device_id becomes text, because a device on Firebase has a
+     *     string id. Existing ids keep their value as text.
      */
-    public const VERSION = 3;
+    public const VERSION = 4;
 
     public const OPTION = 'freedom_schema_version';
 
